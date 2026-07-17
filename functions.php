@@ -1185,6 +1185,32 @@ document.addEventListener("click", function(e){
 
     document.body.appendChild(iframe);
 
+    // FIX (2026-07-17): the logout button previously did nothing when clicked
+    // if the selfcare iframe below never sent back "LOGOUT_COMPLETE" — there
+    // was no timeout/fallback, so a slow or unresponsive selfcare portal left
+    // the user stuck. `logoutFinished` + `fallbackTimer` below guarantee the
+    // real WordPress logout (finishLogout) always fires within ~6s either way.
+    let logoutFinished = false;
+
+    function finishLogout(){
+        // Guards against running twice if both the postMessage response
+        // and the fallback timeout fire (e.g. a late response arrives
+        // just after the timeout already redirected).
+        if (logoutFinished) {
+            return;
+        }
+        logoutFinished = true;
+
+        window.removeEventListener("message", logoutMessageHandler);
+        clearTimeout(fallbackTimer);
+
+        if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+        }
+
+        window.location.href = logoutLink.href;
+    }
+
     function logoutMessageHandler(event){
 
         console.log("Message Received:", event.origin, event.data);
@@ -1194,17 +1220,19 @@ document.addEventListener("click", function(e){
         }
 
         if(event.data && event.data.type === "LOGOUT_COMPLETE"){
-
-            console.log("Logout Complete");
-            window.removeEventListener("message",logoutMessageHandler);
-
-            if(document.body.contains(iframe)){
-                document.body.removeChild(iframe);
-            }
-            console.log("Logout Complete now redirecting to home");
-            window.location.href = logoutLink.href;
+            console.log("Logout Complete, redirecting to home");
+            finishLogout();
         }
     }
+
+    // Fallback: if the selfcare iframe never responds (down, blocked, or
+    // simply doesn't implement this handshake on this route), don't leave
+    // the user stuck on a logout button that does nothing — log them out
+    // of WordPress anyway after a few seconds.
+    const fallbackTimer = setTimeout(function(){
+        console.log("Selfcare logout handshake timed out, logging out anyway");
+        finishLogout();
+    }, 6000);
 
     window.addEventListener("message",logoutMessageHandler);
     iframe.onload = function(){
@@ -1219,13 +1247,17 @@ document.addEventListener("click", function(e){
                 console.error(err);
             }
 
-            iframe.contentWindow.postMessage(
-                {
-                    type: "LOGOUT"
-                },
-                URLS.selfcareOrigin
-            );
-            console.log("LOGOUT event sent");
+            try {
+                iframe.contentWindow.postMessage(
+                    {
+                        type: "LOGOUT"
+                    },
+                    URLS.selfcareOrigin
+                );
+                console.log("LOGOUT event sent");
+            } catch(err) {
+                console.error("Failed to postMessage to selfcare iframe:", err);
+            }
 
         }, 2000);
     };
