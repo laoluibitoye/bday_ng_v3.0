@@ -112,11 +112,17 @@
 
 
                     <?php
-                    $ymal = query_posts(
+                    // FIX (2026-07-18): was query_posts() (uncached, and clobbers the main
+                    // query global — a WordPress anti-pattern), re-run every pageview.
+                    // Now cached per-post via bday_get_cached_posts(), using get_posts()
+                    // instead so it can't interfere with the main query.
+                    $ymal = bday_get_cached_posts(
+                        'bday_ymal_' . get_the_ID(),
                         array(
                             'category_name' => $category[0]->slug,
                             'post__not_in' => array(get_the_ID()),
-                            'posts_per_page' => 3,
+                            'numberposts' => 3,
+                            'suppress_filters' => true,
                         )
                     );
                     ?>

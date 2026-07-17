@@ -204,6 +204,27 @@ remove_action( 'admin_print_styles', 'print_emoji_styles' );
 add_filter( 'excerpt_more', '__return_empty_string' ); 
 
 
+/**
+ * ADDED (2026-07-18): Runs get_posts() through a transient cache.
+ *
+ * The related/"read also"/"you might also like" blocks on single post pages
+ * were re-running expensive term_relationships joins on every single
+ * pageview with no caching layer, which was the main driver of RDS CPU
+ * spikes under traffic bursts (each spike traced back to this exact query
+ * shape via RDS process list). This gives each cache key a TTL window
+ * instead of hitting MySQL on every request.
+ */
+function bday_get_cached_posts( string $cache_key, array $args, int $ttl = 1800 ): array {
+	$posts = get_transient( $cache_key );
+
+	if ( false === $posts ) {
+		$posts = get_posts( $args );
+		set_transient( $cache_key, $posts, $ttl );
+	}
+
+	return $posts;
+}
+
 function custom_get_posts( array $args = array() ): array {
 	// Set default filters for get_posts() to avoid issues.
 	$defaults = array(

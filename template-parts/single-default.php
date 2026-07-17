@@ -91,11 +91,16 @@
                             $tags = get_the_tags();
                             if (!empty($tags)) {
                                 foreach ($tags as $individual_tag) $tag_ids[] = $individual_tag->term_id;
-                                $read_also = custom_get_posts(
+                                // FIX (2026-07-18): was custom_get_posts() (uncached), re-running an
+                                // expensive tag join on every single pageview — main driver of the
+                                // RDS CPU spikes. Now cached per-post via bday_get_cached_posts().
+                                $read_also = bday_get_cached_posts(
+                                    'bday_read_also_' . get_the_ID(),
                                     array(
                                         'tag__in' => $tag_ids,
                                         'post__not_in' => array(get_the_ID()),
                                         'numberposts'   => 3,
+                                        'suppress_filters' => true,
                                     )
                                 );
                                 $read_also_content = ' <div class="read-also"> <header>Related News</header> <ul> ';
@@ -147,11 +152,17 @@
                         </script> -->
                     <!-- AD NOW -->
                     <?php
-                    $ymal = query_posts(
+                    // FIX (2026-07-18): was query_posts() (uncached, and clobbers the main
+                    // query global — a WordPress anti-pattern), re-run every pageview.
+                    // Now cached per-post via bday_get_cached_posts(), using get_posts()
+                    // instead so it can't interfere with the main query.
+                    $ymal = bday_get_cached_posts(
+                        'bday_ymal_' . get_the_ID(),
                         array(
                             'category_name' => $category[0]->slug,
                             'post__not_in' => array(get_the_ID()),
-                            'posts_per_page' => 3,
+                            'numberposts' => 3,
+                            'suppress_filters' => true,
                         )
                     );
                     ?>
