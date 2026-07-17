@@ -1043,6 +1043,14 @@ add_filter('wp_nav_menu_objects', 'bd_custom_menu_visibility', 10, 2);
 add_action('wp_head', 'mq_hide_page_titles');
 
 function mq_hide_page_titles() {
+    // FIX (2026-07-17): skip single posts — articles render their headline as
+    // h1.post-title too (see template-parts/single-default.php / single-pro.php),
+    // and this rule was only meant to hide the redundant page title on the WP
+    // Page template (page.php) wrapping the Magnaquest login/sign-up/reset
+    // forms. Without this check, article titles were hidden site-wide.
+    if ( is_singular( 'post' ) ) {
+        return;
+    }
     ?>
     <style>
         .page-title,
@@ -1053,6 +1061,32 @@ function mq_hide_page_titles() {
         }
     </style>
     <?php
+}
+
+/**
+ * ADDED (2026-07-17): Hide the WordPress admin toolbar on the front end for
+ * subscriber/customer accounts. These are the auto-created WP users behind
+ * Magnaquest login/registration — they should get the normal reader
+ * experience, not the wp-admin toolbar. Implemented as a hardcoded staff
+ * allowlist (same role slugs confirmed for the mq_custom_authenticate login
+ * fix in functions/magnaquest-api.php) rather than a subscriber/customer
+ * blocklist, so any role not explicitly listed as staff is treated as a
+ * reader and has the toolbar hidden by default.
+ */
+add_filter('show_admin_bar', 'bd_hide_admin_bar_for_non_staff');
+function bd_hide_admin_bar_for_non_staff($show) {
+    if (!is_user_logged_in()) {
+        return $show;
+    }
+
+    $user = wp_get_current_user();
+    $staff_roles = ['administrator', 'editor', 'author', 'wpseo_manager', 'bddraft', 'bdeditor', 'wpseo_editor'];
+
+    if (array_intersect($staff_roles, (array) $user->roles)) {
+        return $show; // Staff — leave the toolbar behavior as WordPress normally decides
+    }
+
+    return false; // Everyone else (subscriber, customer, etc.) — no toolbar
 }
 
 /** Magnaquest code end **/
