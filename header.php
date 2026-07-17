@@ -482,63 +482,231 @@
     <?php // Already loaded and checked above ?>
 
     <?php if ( $ad_config['is_live'] ) : ?>
-                <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js" crossorigin="anonymous"></script>
-                <script>
-                window.googletag = window.googletag || {cmd: []};
-                googletag.cmd.push(function() {
+    <!--dochase-->
+    <!--
+      UPDATED (2026-07-18): replaced the old static businessday_top/body1/body2/
+      mid1/mid2/top2/body3 slot definitions with the "Dochase" viewability-based
+      ad-refresh engine and the new GAM network ID (21781351181, combined with
+      the existing 23043164651). Source delivery had 4 of 5 registerSlot() calls
+      missing their closing array bracket — a fatal JS syntax error that broke
+      this entire script block (verified with `node --check`). Fixed here by
+      closing each sizes array before the id/mapping arguments. The staging
+      is_live PHP gate wrapping this block is kept exactly as it was in this
+      theme — the delivered file had dropped it site-wide, which would have
+      made ads fire unconditionally on staging too.
+    -->
+            <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js" crossorigin="anonymous"></script>
+<script>
+window.googletag = window.googletag || { cmd: [] };
+googletag.cmd.push(function () {
 
-                var mappingtop = googletag.sizeMapping()
-                    .addSize([800, 0], [[970, 250], [970, 90],[960,90], [728, 90],[300, 250],'fluid'])
-                    .addSize([0, 0], [[320, 100],[320, 50],[1,1],[300, 50],'fluid'])
-                    .build();
+  /* =========================
+     CORE STATE
+  ========================== */
+  var slots = [];
+  var slotState = {}; // per-slot intelligence
 
-                    googletag.defineSlot('/23043164651/businessday_top', [[728, 90], [970, 250], [960,90], 'fluid', [970, 90], [320, 100],[320, 50],[300, 50], [300, 250]], 'div-gpt-ad-1769091424460-0')
-                    .defineSizeMapping(mappingtop)
-                    .addService(googletag.pubads());
+  var MAX_REFRESHES = 3; // strict AdX-safe cap
 
-                    googletag.defineSlot('/23043164651/businessday_body1', [[250, 250], [300, 250], [336, 280], [320, 480], [480, 320], [320, 50], [320, 100], [300, 50], 'fluid'], 'div-gpt-ad-1769091591513-0')
-                    .addService(googletag.pubads());
+  /* =========================
+     ACTIVITY TRACKING
+  ========================== */
+  var lastActivity = Date.now();
 
-                    googletag.defineSlot('/23043164651/businessday_body2', [[250, 250], [300, 250], [336, 280], [320, 480], [480, 320], [320, 50], [320, 100], [300, 50], 'fluid'], 'div-gpt-ad-1769091670813-0')
-                    .addService(googletag.pubads());
+  ['mousemove', 'scroll', 'touchstart', 'keydown'].forEach(function (evt) {
+    document.addEventListener(evt, function () {
+      lastActivity = Date.now();
+    }, { passive: true });
+  });
 
-                    googletag.defineSlot('/23043164651/businessday_mid1', [[300, 250], [728, 90], [970, 250], 'fluid', [468, 60], [970, 90]], 'div-gpt-ad-1772629248018-0')
-                    .addService(googletag.pubads());
+  /* =========================
+     SIZE MAPPINGS
+  ========================== */
 
-                    googletag.defineSlot('/23043164651/businessday_mid2', [[300, 250], [728, 90], 'fluid', [970, 250], [970, 90], [468, 60]], 'div-gpt-ad-1772629672705-0')
-                    .addService(googletag.pubads());
+  var mappingTop = googletag.sizeMapping()
+    .addSize([1024, 0], [[970, 90], [728, 90], 'fluid'])
+    .addSize([768, 0], [[728, 90], [300, 250], [300, 100], 'fluid'])
+    .addSize([0, 0], [[320, 100], [320, 50], [300, 250], 'fluid'])
+    .build();
 
-                    googletag.defineSlot('/23043164651/businessday_top2', [[728, 90], 'fluid', [320, 50], [468, 60], [970, 90], [970, 250], [300, 100], [300, 50], [320, 100]], 'div-gpt-ad-1772631239401-0')
-                    .addService(googletag.pubads());
+  var mappingBody = googletag.sizeMapping()
+    .addSize([1024, 0], [[336, 280], [300, 280], [300, 250], [250, 250], [320, 480], [480, 320], [320, 100], [320, 50], [300, 50], 'fluid'])
+    .addSize([768, 0], [[336, 280], [300, 250], [250, 250], [320, 480], [480, 320], [320, 100], [320, 50], [300, 50], 'fluid'])
+    .addSize([0, 0], [[300, 250], [250, 250], [320, 480], [480, 320], [320, 100], [320, 50], [300, 50], 'fluid'])
+    .build();
 
-                    googletag.defineSlot('/23043164651/businessday_body3', [[1, 1], [300, 250], 'fluid'], 'div-gpt-ad-1770204845954-0').addService(googletag.pubads());
+  /* =========================
+     SLOT FACTORY
+  ========================== */
 
-                let anchorSlot;
-                let interstitialSlot;
-                anchorSlot = googletag.defineOutOfPageSlot('/23043164651/businessday/businessday_anchor', googletag.enums.OutOfPageFormat.BOTTOM_ANCHOR);
-                interstitialSlot = googletag.defineOutOfPageSlot('/23043164651/businessday/businessday_interstitial', googletag.enums.OutOfPageFormat.INTERSTITIAL);
-                if (anchorSlot) anchorSlot.addService(googletag.pubads());
-                if (interstitialSlot) interstitialSlot.addService(googletag.pubads());
+  function registerSlot(path, sizes, id, mapping) {
+    var slot = googletag.defineSlot(path, sizes, id);
 
-                if (document.body.clientWidth >= 1200){
-                let rightRail;
-                let leftRail;
-                rightRail = googletag.defineOutOfPageSlot('/23043164651/businessday/businessday_right_rail', googletag.enums.OutOfPageFormat.RIGHT_SIDE_RAIL);
-                leftRail = googletag.defineOutOfPageSlot('/23043164651/businessday/businessday_left_rail', googletag.enums.OutOfPageFormat.LEFT_SIDE_RAIL);
-                if (rightRail) rightRail.addService(googletag.pubads());
-                if (leftRail) leftRail.addService(googletag.pubads());
-                }
+    if (!slot) return null;
 
-                googletag.pubads().enableSingleRequest();
-                googletag.pubads().enableLazyLoad({
-                    fetchMarginPercent: 200,
-                    renderMarginPercent: 0,
-                    mobileScaling: 2.0,
-                    });
-                    googletag.pubads().setTargeting('sections', ['all']);
-                    googletag.enableServices();
-                });
-                </script>
+    slot.defineSizeMapping(mapping)
+        .addService(googletag.pubads());
+
+    slots.push(slot);
+
+    slotState[id] = {
+      refreshCount: 0,
+      viewable: false,
+      lastRefresh: 0
+    };
+
+    return slot;
+  }
+
+  /* =========================
+     SLOTS
+  ========================== */
+
+  registerSlot('/23043164651,21781351181/businessday_top',
+    [[728, 90], [300, 50], [320, 100], [300, 100], [468, 60], [970, 90], 'fluid', [320, 50], [300, 250]],
+    'div-gpt-ad-1783084250687-0',
+    mappingTop
+  );
+
+  registerSlot('/23043164651,21781351181/businessday_top2',
+    [[300, 50], [300, 280], [320, 50], [300, 250], [728, 90], [468, 60], [970, 90], [320, 100], 'fluid', [300, 100]],
+    'div-gpt-ad-1783084673395-0',
+    mappingTop
+  );
+
+registerSlot('/23043164651,21781351181/businessday_body1',
+    [[300, 50], [300, 100], [200, 200], [250, 250], [336, 280], [300, 250], 'fluid', [320, 100], [320, 50]],
+    'div-gpt-ad-1783096747143-0',
+    mappingBody
+  );
+
+registerSlot('/23043164651,21781351181/businessday_body2',
+    [[300, 50], [728, 90], [300, 100], [320, 100], [320, 50], [250, 250], [336, 280], [300, 250], [200, 200], [320, 480], 'fluid'],
+    'div-gpt-ad-1783097109737-0',
+    mappingBody
+  );
+
+registerSlot('/23043164651,21781351181/businessday_body3',
+    [[160, 600], [120, 600], [200, 200], [320, 480], [300, 600], 'fluid', [250, 250], [300, 250], [336, 280]],
+    'div-gpt-ad-1783098103568-0',
+    mappingBody
+  );
+
+let anchorSlot;
+let interstitialSlot;
+anchorSlot = googletag.defineOutOfPageSlot('/23043164651,21781351181/businessday/businessday_anchor', googletag.enums.OutOfPageFormat.BOTTOM_ANCHOR);
+interstitialSlot = googletag.defineOutOfPageSlot('/23043164651,21781351181/businessday/businessday_interstitial', googletag.enums.OutOfPageFormat.INTERSTITIAL);
+if (anchorSlot) anchorSlot.addService(googletag.pubads());
+if (interstitialSlot) interstitialSlot.addService(googletag.pubads());
+
+  /* =========================
+     GAM SETTINGS
+  ========================== */
+
+  googletag.pubads().enableSingleRequest();
+
+  googletag.pubads().enableLazyLoad({
+    fetchMarginPercent: 100,
+    renderMarginPercent: 50,
+    mobileScaling: 1.0
+  });
+
+  googletag.pubads().collapseEmptyDivs(true);
+
+  var pageCategory = window.pageCategory || 'all';
+  googletag.pubads().setTargeting('sections', [pageCategory]);
+
+  googletag.enableServices();
+
+  /* =========================
+     VIEWABILITY-BASED ENGINE
+  ========================== */
+
+  function canRefresh(id) {
+    var s = slotState[id];
+
+    if (!s) return false;
+    if (s.refreshCount >= MAX_REFRESHES) return false;
+
+    if (document.hidden || !document.hasFocus()) return false;
+    if (Date.now() - lastActivity > 180000) return false;
+
+    // minimum cooldown between refreshes (2 minutes)
+    if (Date.now() - s.lastRefresh < 120000) return false;
+
+    return true;
+  }
+
+  function refreshSlot(slot, id) {
+    if (!canRefresh(id)) return;
+
+    googletag.pubads().refresh([slot]);
+
+    slotState[id].refreshCount++;
+    slotState[id].lastRefresh = Date.now();
+  }
+
+  /* =========================
+     GPT EVENT-DRIVEN REFRESH
+  ========================== */
+
+  googletag.pubads().addEventListener('impressionViewable', function (event) {
+    var slot = event.slot;
+    var id = slot.getSlotElementId();
+
+    if (!slotState[id]) return;
+
+    slotState[id].viewable = true;
+
+    // only refresh after a real viewable impression
+    setTimeout(function () {
+      refreshSlot(slot, id);
+    }, 30000); // 30s post-view delay
+  });
+
+  /* =========================
+     INTERSECTION OBSERVER (TRIGGER LAYER)
+  ========================== */
+
+  var observer = new IntersectionObserver(function (entries) {
+
+    entries.forEach(function (entry) {
+
+      if (!entry.isIntersecting || entry.intersectionRatio < 0.7) return;
+
+      var id = entry.target.id;
+
+      var slot = slots.find(function (s) {
+        return s.getSlotElementId() === id;
+      });
+
+      if (!slot) return;
+
+      // DO NOT refresh immediately — only mark eligible
+      if (!slotState[id]) return;
+
+      slotState[id].eligible = true;
+    });
+
+  }, {
+    threshold: [0.7]
+  });
+
+  /* =========================
+     ATTACH OBSERVER
+  ========================== */
+
+  googletag.cmd.push(function () {
+    slots.forEach(function (slot) {
+      var id = slot.getSlotElementId();
+      var el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+  });
+
+});
+</script>
+    <!--dochase end-->
             <?php endif; ?>
     <?php if (amp_is_request()): ?>
 
@@ -931,7 +1099,7 @@
                 cmd: []
             };
             googletag.cmd.push(function() {
-                googletag.defineSlot('<?php echo esc_js($ad_config['network_id']); ?>_desktop_1', [
+                googletag.defineSlot('/21781351181/bd_desktop_1', [
                     [970, 250], 'fluid', [468, 60],
                     [970, 90],
                     [300, 250],
@@ -947,7 +1115,7 @@
                 cmd: []
             };
             googletag.cmd.push(function() {
-                googletag.defineSlot('<?php echo esc_js($ad_config['network_id']); ?>_desktop_2', [
+                googletag.defineSlot('/21781351181/bd_desktop_2', [
                     [970, 250], 'fluid', [300, 250],
                     [728, 90],
                     [468, 60],
@@ -963,7 +1131,7 @@
                 cmd: []
             };
             googletag.cmd.push(function() {
-                googletag.defineSlot('<?php echo esc_js($ad_config['network_id']); ?>_desktop_3', [
+                googletag.defineSlot('/21781351181/bd_desktop_3', [
                     [300, 50],
                     [300, 100], 'fluid', [728, 90]
                 ], 'div-gpt-ad-1731238848673-0').addService(googletag.pubads());
@@ -977,7 +1145,7 @@
                 cmd: []
             };
             googletag.cmd.push(function() {
-                googletag.defineSlot('<?php echo esc_js($ad_config['network_id']); ?>_desktop_4', ['fluid', [300, 100],
+                googletag.defineSlot('/21781351181/bd_desktop_4', ['fluid', [300, 100],
                     [300, 250],
                     [728, 90]
                 ], 'div-gpt-ad-1731239152173-0').addService(googletag.pubads());
@@ -1041,7 +1209,7 @@
             cmd: []
         };
         googletag.cmd.push(function() {
-            googletag.defineSlot('<?php echo esc_js($ad_config['network_id']); ?>_mobile_1', [
+            googletag.defineSlot('/21781351181/bd_mobile_1', [
                 [300, 50],
                 [300, 100],
                 [320, 100],
@@ -1059,7 +1227,7 @@
             cmd: []
         };
         googletag.cmd.push(function() {
-            googletag.defineSlot('<?php echo esc_js($ad_config['network_id']); ?>_mobile_2', ['fluid', [300, 100],
+            googletag.defineSlot('/21781351181/bd_mobile_2', ['fluid', [300, 100],
                 [300, 250],
                 [300, 50],
                 [320, 50],
@@ -1076,7 +1244,7 @@
             cmd: []
         };
         googletag.cmd.push(function() {
-            googletag.defineSlot('<?php echo esc_js($ad_config['network_id']); ?>_mobile_3', [
+            googletag.defineSlot('/21781351181/bd_mobile_3', [
                 [300, 100],
                 [336, 280],
                 [300, 250],
@@ -1093,7 +1261,7 @@
             cmd: []
         };
         googletag.cmd.push(function() {
-            googletag.defineSlot('<?php echo esc_js($ad_config['network_id']); ?>_mobile_4', [
+            googletag.defineSlot('/21781351181/bd_mobile_4', [
                 [336, 280],
                 [300, 100],
                 [300, 50],
@@ -1429,8 +1597,8 @@
         };
 
         // Define out-of-page slots dynamically
-        googletag.defineOutOfPageSlot('<?php echo esc_js($ad_config['network_id']); ?>_left_rail', googletag.enums.OutOfPageFormat.LEFT_SIDE_RAIL).addService(googletag.pubads());
-        googletag.defineOutOfPageSlot('<?php echo esc_js($ad_config['network_id']); ?>_right_rail', googletag.enums.OutOfPageFormat.RIGHT_SIDE_RAIL).addService(googletag.pubads());
+        googletag.defineOutOfPageSlot('/21781351181/bd_left_rail', googletag.enums.OutOfPageFormat.LEFT_SIDE_RAIL).addService(googletag.pubads());
+        googletag.defineOutOfPageSlot('/21781351181/bd_right_rail', googletag.enums.OutOfPageFormat.RIGHT_SIDE_RAIL).addService(googletag.pubads());
 
         // Enable features
         googletag.pubads().enableSingleRequest();
