@@ -230,10 +230,16 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 const refUrl = new URL(document.referrer);
                 const currentUrl = new URL(window.location.href);
-                if (refUrl.host === currentUrl.host && 
-                    !refUrl.pathname.includes('/login') && 
+                // FIX (2026-07-18): excluded /reset-password too — after a successful
+                // password reset, the JS on that page sends the browser to /login, whose
+                // document.referrer is then the reset-password URL (token included). Without
+                // this exclusion, that got captured as redirect_to and used after login,
+                // bouncing the user right back to /reset-password instead of the homepage.
+                if (refUrl.host === currentUrl.host &&
+                    !refUrl.pathname.includes('/login') &&
                     !refUrl.pathname.includes('/sign-in') &&
-                    !refUrl.pathname.includes('/sign-up')) {
+                    !refUrl.pathname.includes('/sign-up') &&
+                    !refUrl.pathname.includes('/reset-password')) {
                     redirectTo = document.referrer;
                 }
             } catch(e) {}
