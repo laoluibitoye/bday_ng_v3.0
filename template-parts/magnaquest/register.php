@@ -1,11 +1,11 @@
 <?php
 
 // Configuration
-$loginUrl = 'https://stg18326.businessday.ng/Login/';
-$homeUrl = 'https://stg18326.businessday.ng/';
+$loginUrl = 'https://businessday.ng/Login/';
+$homeUrl = 'https://businessday.ng/';
 
-$selfcareOrigin = 'https://businessdaytest-selfcare.magnaquest.com';
-$checkoutOrigin = 'https://businessdaytest.magnaquest.com';
+$selfcareOrigin = 'https://businessday-selfcare.magnaquest.com';
+$checkoutOrigin = 'https://businessday.magnaquest.com';
 
 $subscriptionUrl = $selfcareOrigin . '/#/account/mySubscription';
 
