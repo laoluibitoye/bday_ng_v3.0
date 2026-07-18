@@ -24,32 +24,32 @@
 
     <?php wp_head(); ?>
 
-    <?php 
-    // Safely retrieve the ad network configuration
-    $ad_config = function_exists('bd_get_ad_network_config') ? bd_get_ad_network_config() : [];
-    if (!is_array($ad_config)) {
-        $ad_config = [];
-    }
-    if (!isset($ad_config['network_id'])) {
-        $ad_config['network_id'] = '';
-    }
-    if (!isset($ad_config['is_live'])) {
-        $ad_config['is_live'] = false;
-    }
+    <?php
+    // FIX (2026-07-18): removed the $ad_config indirection through
+    // bd_get_ad_network_config() — that function was never actually defined
+    // by any plugin (confirmed: doesn't exist anywhere in this theme, the old
+    // theme, or the local dev plugins folder), so function_exists() always
+    // returned false and is_live silently defaulted to false, disabling every
+    // ad block on the live site. Confirmed by the user: ads work when the old
+    // (ungated) theme is active, and stop working the moment v3.0 activates.
+    // network_id was never actually read anywhere (every ad slot already has
+    // its GAM path hardcoded inline), so only is_live needs to exist now.
+    // Live by default; auto-disabled on staging hostnames below.
+    $ad_is_live = true;
 
     // Automatically disable live ads on staging environments to prevent ad pollution and metrics issues
     $current_host = $_SERVER['HTTP_HOST'] ?? '';
     if (
-        strpos($current_host, 'stg') !== false || 
-        strpos($current_host, 'staging') !== false || 
+        strpos($current_host, 'stg') !== false ||
+        strpos($current_host, 'staging') !== false ||
         (defined('WP_HOME') && (strpos(WP_HOME, 'stg') !== false || strpos(WP_HOME, 'staging') !== false)) ||
         (defined('WP_SITEURL') && (strpos(WP_SITEURL, 'stg') !== false || strpos(WP_SITEURL, 'staging') !== false))
     ) {
-        $ad_config['is_live'] = false;
+        $ad_is_live = false;
     }
     ?>
 
-    <?php if ( !$ad_config['is_live'] ) : ?>
+    <?php if ( !$ad_is_live ) : ?>
     <script>
         // 1. Safe DOM script creation interceptor to block Google Ads/Adsense dynamically on staging.
         // This stops Google Auto Ads, anchor/sticky ads, and dynamic ad plugins from loading
@@ -481,7 +481,7 @@
 
     <?php // Already loaded and checked above ?>
 
-    <?php if ( $ad_config['is_live'] ) : ?>
+    <?php if ( $ad_is_live ) : ?>
     <!--dochase-->
     <!--
       UPDATED (2026-07-18): replaced the old static businessday_top/body1/body2/
@@ -1090,7 +1090,7 @@ if (interstitialSlot) interstitialSlot.addService(googletag.pubads());
         }
     </style>
 
-    <?php if ( $ad_config['is_live'] ) : ?>
+    <?php if ( $ad_is_live ) : ?>
     <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
 
     <div class="d-none d-md-block">
@@ -1202,7 +1202,7 @@ if (interstitialSlot) interstitialSlot.addService(googletag.pubads());
   })();
 </script>
 </head>
-<?php if ( $ad_config['is_live'] ) : ?>
+<?php if ( $ad_is_live ) : ?>
 <div class="d-none">
     <script>
         window.googletag = window.googletag || {
@@ -1590,7 +1590,7 @@ if (interstitialSlot) interstitialSlot.addService(googletag.pubads());
 	    
         
     </div>
-    <?php if ( $ad_config['is_live'] ) : ?>
+    <?php if ( $ad_is_live ) : ?>
     <script>
         window.googletag = window.googletag || {
             cmd: []
