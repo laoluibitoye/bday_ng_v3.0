@@ -790,7 +790,9 @@ if (interstitialSlot) interstitialSlot.addService(googletag.pubads());
 
         .ad-container {
              align-items: center;
-            background-color: #FFF1E0;
+            /* UPDATED (2026-07-18): background-color #FFF1E0 -> #F8F9FA, missed in the
+               earlier design-refresh pass (masterpage.php/widgets.php already had it) */
+            background-color: #F8F9FA;
             padding-top: 0.5em;
             padding-bottom: 1em;
             min-height: 250px;
