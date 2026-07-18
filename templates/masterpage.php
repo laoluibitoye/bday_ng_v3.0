@@ -44,9 +44,10 @@
 		)
 	);
 
+    // UPDATED (2026-07-18): category renamed from "who-is-thinking-for-nigeria" to "opinion"
     $opinion = custom_get_posts(
 		array(
-			'category_name' => 'who-is-thinking-for-nigeria',
+			'category_name' => 'opinion',
 			'numberposts'   => 3,
 		)
 	);
@@ -302,10 +303,11 @@
 
 <!--Dochase-->
 
-<!-- /23043164651/businessday_top -->
-<div id='div-gpt-ad-1769091424460-0' style='min-width: 300px; min-height: 50px;'>
+<!-- UPDATED (2026-07-18): slot id updated to match header.php's new Dochase registration -->
+<!-- /23043164651,21781351181/businessday_top -->
+<div id='div-gpt-ad-1783084250687-0' style='min-width: 300px; min-height: 50px;'>
   <script>
-    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1769091424460-0'); });
+    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1783084250687-0'); });
   </script>
 </div>
 
@@ -319,10 +321,13 @@
         </script>
     </div>
 
-    <!-- /23043164651/businessday_mid2 -->
-<div id='div-gpt-ad-1772629672705-0' style='min-width: 300px; min-height: 60px;'>
+    <!-- FIX (2026-07-18): old businessday_mid2 slot no longer exists after the
+         Dochase engine update — remapped to the unused businessday_body1 slot
+         instead of silently rendering nothing. -->
+    <!-- /23043164651,21781351181/businessday_body1 -->
+<div id='div-gpt-ad-1783096747143-0' style='min-width: 300px; min-height: 60px;'>
   <script>
-    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1772629672705-0'); });
+    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1783096747143-0'); });
   </script>
 </div>
 </div>
@@ -332,71 +337,73 @@
     <div class="container">
         <div class="col-lg-12">
             <div class="row">
-                <!-- Education Series Section - COMMENTED OUT -->
-                
-               
-                        <!--    <div class="col-lg-12 mb-4">
-                    <div class="col-lg-12 pro-section" style="background-color: #e77276 !important; color: white">
-                        <?php
-                            $running = custom_get_posts(
-                                array(
-                                    'tag' => 'iran',
-                                    'numberposts' => 4,
-                                )
-                            );
+                <!-- UPDATED (2026-07-18): replaced the dead, commented-out "Iran war" tag
+                     block below with a live World Cup 2026 promo block (tag:
+                     2026-fifa-world-cup), re-themed black-on-gray instead of white-on-red,
+                     plus a Terrific widget embed. -->
+<div class="col-lg-12 mb-4">
+    <div class="col-lg-12 pro-section" style="background-color: #E7E7E7;">
+        <?php
+            $running = custom_get_posts(
+                array(
+                    'tag' => '2026-fifa-world-cup',
+                    'numberposts' => 4,
+                )
+            );
 
-                            echo '<section class="news-block-2">
-                            <div class="container">
-                                <div class="section-heading d-flex justify-content-between">
-                                    <div class="mt-1">
-                                        <a href="https://businessday.ng/tag/iran/" target="_blank" style="color: white !important;">
-                                            <span style="font-weight: 900; font-size: 22px; color: white !important;"> 
-                                            U.S./Israel - Iran war
-                                            </span>
-                                        </a>
-                                    </div>
-                                    <div class="mt-0">
-                                        <a href="https://businessday.ng/tag/iran/" class="btn btn-sm btn-danger" target="_blank">
-                                            View More
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="col-lg-12">
-                                    <div class="row news">';
-                                        
-                                        if ( ! empty( $running ) ) :
-                                            foreach( $running as $post ) :
-                                            echo '<div class="col-lg-3 mb-3">
-                                                    <article>
-                                                        <figure>
-                                                            <a href="'.get_the_permalink( $post->ID ).'">'.get_thumbnail(['post_id'=>$post->ID, 'size'=>'medium_rectangle']).'</a>
-                                                        </figure>
-                                                        <div class="post-info">
-                                                            <h2 class="post-title"><a href="'.get_the_permalink( $post->ID ).'" style="color: white !important;">'.$post->post_title.'</a></h2>
-                                                            <div class="post-excerpt" style="color: white !important;">
-                                                                '.get_the_excerpt( $post ).'
-                                                            </div>
-                                                            <div class="post-meta">
-                                                                <span class="post-date" style="color: white !important;"> '.custom_time_format($post->post_date, 'full').' </span>
-                                                            </div>
-                                                        </div>
-                                                    </article>
-                                                </div>';
-                                            endforeach;
-                                        endif;
-                                        echo '
-                                    </div>
-                                </div>
-                            </div>
-                            </section>';
-                        ?>
+            echo '<section class="news-block-2">
+            <div class="container">
+                <div class="section-heading d-flex justify-content-between">
+                    <div class="mt-1">
+                        <a href="https://businessday.ng/tag/2026-fifa-world-cup/" target="_blank" style="color: black !important;">
+                            <span style="font-weight: 900; font-size: 22px; color: black !important;">
+                            2026 World Cup
+                            </span>
+                        </a>
                     </div>
-                </div> -->
-                
+                    <div class="mt-0">
+                        <a href="https://businessday.ng/tag/2026-fifa-world-cup/" class="btn btn-sm btn-danger" target="_blank">
+                            View More
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="row news">';
+
+                        if ( ! empty( $running ) ) :
+                            foreach( $running as $post ) :
+                            echo '<div class="col-lg-3 mb-3">
+                                    <article>
+                                        <figure>
+                                            <a href="'.get_the_permalink( $post->ID ).'">'.get_thumbnail(['post_id'=>$post->ID, 'size'=>'medium_rectangle']).'</a>
+                                        </figure>
+                                        <div class="post-info">
+                                            <h2 class="post-title"><a href="'.get_the_permalink( $post->ID ).'" style="color: black !important;">'.$post->post_title.'</a></h2>
+                                            <div class="post-excerpt" style="color: black !important;">
+                                                '.get_the_excerpt( $post ).'
+                                            </div>
+                                            <div class="post-meta">
+                                                <span class="post-date" style="color: black !important;"> '.custom_time_format($post->post_date, 'full').' </span>
+                                            </div>
+                                        </div>
+                                    </article>
+                                </div>';
+                            endforeach;
+                        endif;
+                        echo '
+                    </div>
+                </div>
+            </div>
+            </section>';
+        ?>
+    </div>
+</div>
+              <!--Terrific-->
+<div data-source="terrific" embedding-id="NTWXkg1ovwVf9kwd8DPf" class="container"></div>
 
                 <!-- Premium Section -->
                 <div class="col-lg-12">
-                    <div class="col-lg-12 pro-section">
+                    <div class="col-lg-12 pro-section" style="background-color: #E7E7E7 !important; color: black">
                         <section class="news-block-2">
                             <div class="container">
                                 <div class="section-heading">
@@ -486,7 +493,8 @@
                     </div>
 
                     <!-- Other News Section -->
-                    <div class="col-lg-12 other-news-section" style="background-color: #FFF1E0 !important;">
+                    <!-- UPDATED (2026-07-18): background-color #FFF1E0 -> #F8F9FA -->
+                    <div class="col-lg-12 other-news-section" style="background-color: #F8F9FA !important;">
     <div class="section-heading">
         <a href="<?= category_url('news') ?>">
             <span>IN OTHER NEWS</span>
@@ -538,26 +546,33 @@
 
                     <!-- Desktop Ad -->
                     <div class="ad-container desktop-only d-none d-md-block">
-                    <!-- /23043164651/businessday_body2 Dochase -->
-                        <div id='div-gpt-ad-1769091670813-0' style='min-width: 250px; min-height: 50px;'>
+                    <!-- UPDATED (2026-07-18): slot id updated to match header.php's new Dochase registration -->
+                    <!-- /23043164651,21781351181/businessday_top2 -->
+                        <div id='div-gpt-ad-1783084673395-0' style='min-width: 300px; min-height: 50px;'>
                         <script>
-                            googletag.cmd.push(function() { googletag.display('div-gpt-ad-1769091670813-0'); });
+                            googletag.cmd.push(function() { googletag.display('div-gpt-ad-1783084673395-0'); });
                         </script>
                         </div>
                     <!--Docahse Ends-->
-                        <div id='div-gpt-ad-1769091670813-0' style='min-width: 250px; min-height: 50px;'>
+                    <!-- FIX (2026-07-18): this was a leftover duplicate of the old businessday_body2
+                         div above (same dead id) — remapped to the unused businessday_body2 slot
+                         instead of silently rendering nothing. -->
+                        <div id='div-gpt-ad-1783097109737-0' style='min-width: 250px; min-height: 50px;'>
                             <script>
-                                googletag.cmd.push(function() { googletag.display('div-gpt-ad-1769091670813-0'); });
+                                googletag.cmd.push(function() { googletag.display('div-gpt-ad-1783097109737-0'); });
                             </script>
                             </div>
                         </div>
 
                     <!-- Mobile Ad -->
                     <div class="ad-container mobile-only d-sm-block d-md-none">
-                        <!-- /23043164651/businessday_mid1 Dochase-->
-                            <div id='div-gpt-ad-1772629248018-0' style='min-width: 300px; min-height: 60px;'>
+                        <!-- FIX (2026-07-18): old businessday_mid1 slot no longer exists after
+                             the Dochase engine update — remapped to the unused
+                             businessday_body3 slot instead of silently rendering nothing. -->
+                        <!-- /23043164651,21781351181/businessday_body3 Dochase-->
+                            <div id='div-gpt-ad-1783098103568-0' style='min-width: 300px; min-height: 60px;'>
                             <script>
-                                googletag.cmd.push(function() { googletag.display('div-gpt-ad-1772629248018-0'); });
+                                googletag.cmd.push(function() { googletag.display('div-gpt-ad-1783098103568-0'); });
                             </script>
                             </div>
                         <div id='div-gpt-ad-1731239786872-0' style='min-width: 300px; min-height: 50px;'>
@@ -573,7 +588,8 @@
                     <div class="col-lg-12">
                         <div class="row">
                             <div class="col-lg-8">
-                                <div class="columnist-news" style="background-color: #FFF1E0 !important;">
+                                <!-- UPDATED (2026-07-18): background-color #FFF1E0 -> #F8F9FA -->
+                                <div class="columnist-news" style="background-color: #F8F9FA !important;">
                                     <div class="section-heading">
                                         <a href="<?= category_url('columnist') ?>">
                                             <span>COLUMNISTS</span>
@@ -614,18 +630,19 @@
 
                             <div class="col-lg-4 opinion-news">
                                 <div class="news-lists">
+                                    <!-- UPDATED (2026-07-18): category renamed from "who-is-thinking-for-nigeria" to "opinion" -->
                                     <div class="section-heading">
-                                        <a href="<?= category_url('who-is-thinking-for-nigeria') ?>">
-                                            <span>WHO IS THINKING FOR NIGERIA</span>
+                                        <a href="<?= category_url('opinion') ?>">
+                                            <span>OPINION</span>
                                         </a>
                                     </div>
-                                    <?php 
-                                        if ( ! empty( $opinion ) ) : 
-                                            foreach( $opinion as $post ) : 
+                                    <?php
+                                        if ( ! empty( $opinion ) ) :
+                                            foreach( $opinion as $post ) :
                                     ?>
                                     <article>
                                         <span class="category">
-                                            <a href="<?= get_category_link(get_cat_ID('who-is-thinking-for-nigeria')) ?>">YSOT</a>
+                                            <a href="<?= get_category_link(get_cat_ID('opinion')) ?>">OPINION</a>
                                         </span>
                                         <p class="post-title">
                                             <a href="<?= get_the_permalink( $post->ID ); ?>"><?= $post->post_title; ?></a>
