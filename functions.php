@@ -1199,7 +1199,7 @@ function mq_custom_logout_sync() {
     /* Configuration */
 
     $RedirectUrl       = 'https://businessday.ng/';
-    $selfcareOrigin    = 'https://businessday-selfcare.magnaquest.com';
+    $selfcareOrigin    = 'https://businessdaytest-selfcare.magnaquest.com';
     $HiddenIframeUrl   = $selfcareOrigin . '/#/account/mySubscription';
 
     //WordPress logout URL

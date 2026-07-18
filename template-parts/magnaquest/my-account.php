@@ -5,9 +5,9 @@
 
 // Configuration
 $loginUrl = 'https://businessday.ng/Login/';
-$selfcareOrigin = 'https://businessday-selfcare.magnaquest.com';
+$selfcareOrigin = 'https://businessdaytest-selfcare.magnaquest.com';
 $selfcareMyAccountUrl = $selfcareOrigin . '/#/account';
-$checkoutOrigin = 'https://businessday.magnaquest.com';
+$checkoutOrigin = 'https://businessdaytest.magnaquest.com';
 
 if (!is_user_logged_in()) {
     wp_redirect($loginUrl);

@@ -4,8 +4,8 @@
 $loginUrl = 'https://businessday.ng/Login/';
 $homeUrl = 'https://businessday.ng/';
 
-$selfcareOrigin = 'https://businessday-selfcare.magnaquest.com';
-$checkoutOrigin = 'https://businessday.magnaquest.com';
+$selfcareOrigin = 'https://businessdaytest-selfcare.magnaquest.com';
+$checkoutOrigin = 'https://businessdaytest.magnaquest.com';
 
 $subscriptionUrl = $selfcareOrigin . '/#/account/mySubscription';
 
