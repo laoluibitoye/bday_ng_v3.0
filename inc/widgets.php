@@ -391,7 +391,8 @@ function events_widget($atts){
         'posts_per_page' => 3,
     ]);
     $i = 0;
-    $colors = ['#FFF1E0', '#FFF1E0', '#FFF1E0'];
+    // UPDATED (2026-07-18): background-color #FFF1E0 -> #F8F9FA
+    $colors = ['#F8F9FA', '#F8F9FA', '#F8F9FA'];
 
     ob_start(); // Fixed: Added output buffer
     ?>
@@ -513,7 +514,8 @@ function homepage_news_carousel($atts) {
     ob_start();
     ?>
     <style>
-        .bloomberg-carousel-section { background-color: #FFF1E0; padding: 40px 0 20px 0; margin: 60px 0; }
+        /* UPDATED (2026-07-18): background-color #FFF1E0 -> #F8F9FA */
+        .bloomberg-carousel-section { background-color: #F8F9FA; padding: 40px 0 20px 0; margin: 60px 0; }
         .bloomberg-carousel-section .container-wide { max-width: 1350px; margin: 0 auto; padding: 0 20px; }
         .nh4-peek-carousel-container { width: 100%; overflow: hidden; position: relative; }
         .nh4-peek-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; padding-bottom: 35px; gap: 20px; }
@@ -537,7 +539,8 @@ function homepage_news_carousel($atts) {
             .nh4-peek-item { width: calc(25% - 15px); } 
         }
 
-        .bloomberg-card { background: #FFF1E0; border: 1px solid #e0e0e0; padding: 15px; height: 600px; display: flex; flex-direction: column; box-sizing: border-box; width: 100% !important; }
+        /* UPDATED (2026-07-18): background #FFF1E0 -> #E7E7E7 */
+        .bloomberg-card { background: #E7E7E7; border: 1px solid #e0e0e0; padding: 15px; height: 600px; display: flex; flex-direction: column; box-sizing: border-box; width: 100% !important; }
         .bloomberg-card h3 { font-size: 1.2rem; font-weight: 900; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; text-transform: uppercase; font-family: inherit; }
         
         /* Card Header Links styling */
@@ -1516,3 +1519,270 @@ class FluentCRM_Remote_Widget_Helper {
     }
 }
  // Fixed: Removed the orphaned close brace beneath this line.
+
+// ADDED (2026-07-18): World Cup 2026 Marquee Shortcode
+function bd_worldcup_marquee_shortcode($atts) {
+    // Determine the target link requested by user
+    $target_url = 'https://businessday.ng/world-cup-2026/';
+
+    ob_start();
+    ?>
+    <style>
+        .wc-marquee-wrapper {
+            background-color: #F70505;
+            color: #ffffff !important;
+            padding: 12px 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            display: block;
+            width: 100%;
+            z-index: 999;
+            text-decoration: none !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s;
+        }
+        .wc-marquee-wrapper:hover {
+            background-color: #cc0000;
+        }
+        .wc-marquee-content {
+            display: inline-block;
+            white-space: nowrap;
+            animation: wc-marquee-anim 25s linear infinite;
+            font-weight: 800;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .wc-marquee-wrapper:hover .wc-marquee-content {
+            animation-play-state: paused;
+        }
+        @keyframes wc-marquee-anim {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100%); }
+        }
+    </style>
+    <a href="<?php echo esc_url($target_url); ?>" class="wc-marquee-wrapper" id="bd-worldcup-marquee-element">
+        <div class="wc-marquee-content">
+            🏆 WORLD CUP 2026 IS LIVE! CLICK HERE TO VIEW REAL-TIME FIXTURES, RESULTS, AND PLAY THE INTERACTIVE BRACKET PREDICTOR! ⚽
+        </div>
+    </a>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var marquee = document.getElementById("bd-worldcup-marquee-element");
+            // Try to find the site header/menu bar
+            var header = document.querySelector("header") || document.querySelector(".navbar") || document.querySelector(".site-header") || document.getElementById("masthead");
+            if (header && marquee) {
+                // Move the marquee right below the header
+                header.parentNode.insertBefore(marquee, header.nextSibling);
+            }
+        });
+    </script>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('worldcup_marquee', 'bd_worldcup_marquee_shortcode');
+
+// World Cup 2026 Marquee Widget (with Toggle)
+class BusinessDay_WorldCup_Marquee_Widget extends WP_Widget {
+    public function __construct() {
+        parent::__construct(
+            'bd_worldcup_marquee_widget',
+            'BD World Cup Marquee',
+            ['description' => 'Displays a live World Cup 2026 marquee ticker with an easy on/off toggle.']
+        );
+    }
+
+    public function widget($args, $instance) {
+        $enabled = !empty($instance['enabled']) ? $instance['enabled'] : 0;
+        if (!$enabled) {
+            return; // Do not render if the toggle is off
+        }
+
+        echo $args['before_widget'];
+        echo do_shortcode('[worldcup_marquee]');
+        echo $args['after_widget'];
+    }
+
+    public function form($instance) {
+        $enabled = !empty($instance['enabled']) ? $instance['enabled'] : 0;
+        ?>
+        <p>
+            <input class="checkbox" type="checkbox" <?php checked($enabled, 1); ?> id="<?php echo esc_attr($this->get_field_id('enabled')); ?>" name="<?php echo esc_attr($this->get_field_name('enabled')); ?>" value="1" />
+            <label for="<?php echo esc_attr($this->get_field_id('enabled')); ?>" style="font-weight: bold;">Enable World Cup Marquee?</label>
+        </p>
+        <p class="description">Turn this toggle ON to display the World Cup marquee on the frontend. When OFF, the marquee is completely hidden.</p>
+        <?php
+    }
+
+    public function update($new_instance, $old_instance) {
+        $instance = [];
+        $instance['enabled'] = (!empty($new_instance['enabled'])) ? 1 : 0;
+        return $instance;
+    }
+}
+
+function bd_register_worldcup_marquee_widget() {
+    register_widget('BusinessDay_WorldCup_Marquee_Widget');
+}
+add_action('widgets_init', 'bd_register_worldcup_marquee_widget');
+
+// Shortcode for World Cup 2026: Today's Fixtures
+function bd_todays_fixtures_shortcode($atts) {
+    ob_start();
+    ?>
+    <div id="wc-todays-fixtures-container" style="font-family: 'Inter', sans-serif;">
+        <div style="padding: 15px; text-align: center; color: #888; font-size: 14px;">Loading fixtures...</div>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('wc-todays-fixtures-container');
+        const API_URL = 'https://worldcup26.ir/get/games';
+
+        const flagMap = {
+            "Mexico": "mx", "South Africa": "za", "South Korea": "kr", "Czech Republic": "cz",
+            "Canada": "ca", "Bosnia and Herzegovina": "ba", "United States": "us", "Paraguay": "py",
+            "Haiti": "ht", "Scotland": "gb-sct", "Australia": "au", "Turkey": "tr",
+            "Brazil": "br", "Morocco": "ma", "Qatar": "qa", "Switzerland": "ch",
+            "Ivory Coast": "ci", "Ecuador": "ec", "Germany": "de", "Curaçao": "cw",
+            "Netherlands": "nl", "Japan": "jp", "Sweden": "se", "Tunisia": "tn",
+            "Iran": "ir", "New Zealand": "nz", "Spain": "es", "Cape Verde": "cv",
+            "Belgium": "be", "Egypt": "eg", "Saudi Arabia": "sa", "Uruguay": "uy",
+            "France": "fr", "Senegal": "sn", "Iraq": "iq", "Norway": "no",
+            "Argentina": "ar", "Algeria": "dz", "Austria": "at", "Jordan": "jo",
+            "Portugal": "pt", "Democratic Republic of the Congo": "cd", "England": "gb-eng",
+            "Croatia": "hr", "Uzbekistan": "uz", "Colombia": "co", "Ghana": "gh", "Panama": "pa"
+        };
+
+        function getFlagSpan(teamNameEn) {
+            if(flagMap[teamNameEn]) {
+                return `<span style="display:inline-block; width: 24px; height: 18px; border-radius: 3px; background-size: cover; background-position: center; background-image: url('https://flagcdn.com/w40/${flagMap[teamNameEn]}.png'); box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></span>`;
+            }
+            return `<span style="display:inline-block; width: 24px; height: 18px; border-radius: 3px; background-color: #eee; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></span>`;
+        }
+
+        function parseDate(dateStr) {
+            if(!dateStr) return new Date();
+            const parts = dateStr.split(' ');
+            const dateParts = parts[0].split('/');
+            if(dateParts.length === 3) return new Date(dateParts[2], dateParts[0]-1, dateParts[1]);
+            return new Date(dateStr);
+        }
+
+        function isToday(d) {
+            const today = new Date();
+            return d.getDate() === today.getDate() &&
+                   d.getMonth() === today.getMonth() &&
+                   d.getFullYear() === today.getFullYear();
+        }
+
+        fetch(API_URL)
+            .then(res => res.json())
+            .then(data => {
+                if(!data || !data.games) return;
+
+                const todaysGames = data.games.filter(g => {
+                    const d = parseDate(g.local_date);
+                    return isToday(d);
+                });
+
+                if (todaysGames.length === 0) {
+                    container.innerHTML = '<div style="padding: 15px; border: 1px solid #eee; border-radius: 8px; text-align: center; font-size: 14px; background: #fafafa; color: #666;">No matches scheduled for today.</div>';
+                    return;
+                }
+
+                let html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+                todaysGames.forEach(g => {
+                    const home = g.home_team_name_en || g.home_team_label || 'TBD';
+                    const away = g.away_team_name_en || g.away_team_label || 'TBD';
+
+                    let timeStatus = '';
+                    let scoreBox = '';
+                    if (g.finished === 'TRUE') {
+                        timeStatus = `<span style="font-size: 11px; font-weight: 800; color: #121111; background: #eee; padding: 2px 6px; border-radius: 4px;">FT</span>`;
+                        scoreBox = `<div style="background: #121111; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 16px; margin: 0 10px;">${g.home_score} - ${g.away_score}</div>`;
+                    } else if (g.time_elapsed !== 'notstarted' && g.time_elapsed !== 'finished') {
+                        timeStatus = `<span style="font-size: 11px; font-weight: 800; color: #fff; background: #f70505; padding: 2px 6px; border-radius: 4px; animation: blink 1.5s infinite;">LIVE ${g.time_elapsed}</span>`;
+                        scoreBox = `<div style="background: #f70505; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 16px; margin: 0 10px; box-shadow: 0 4px 10px rgba(247,5,5,0.2);">${g.home_score} - ${g.away_score}</div>`;
+                    } else {
+                        timeStatus = `<span style="font-size: 12px; font-weight: 700; color: #666; background: #f5f5f5; padding: 2px 8px; border-radius: 4px;">${g.local_time || 'TBD'}</span>`;
+                        scoreBox = `<div style="background: #f9f9f9; color: #888; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 14px; margin: 0 10px; border: 1px solid #eee;">VS</div>`;
+                    }
+
+                    html += `
+                        <a href="/world-cup-2026/" style="display: flex; flex-direction: column; text-decoration: none; border: 1px solid #e5e7eb; border-radius: 10px; padding: 15px; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px rgba(247,5,5,0.1)'; this.style.borderColor='#f70505';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.02)'; this.style.borderColor='#e5e7eb';">
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px;">
+                                <span style="font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 1px;">${g.type === 'group' ? 'Group ' + g.group : 'Round: ' + g.type.toUpperCase()}</span>
+                                ${timeStatus}
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                                    ${getFlagSpan(home)}
+                                    <span style="font-weight: 700; color: #121111; font-size: 14px;">${home}</span>
+                                </div>
+                                ${scoreBox}
+                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-end;">
+                                    <span style="font-weight: 700; color: #121111; font-size: 14px;">${away}</span>
+                                    ${getFlagSpan(away)}
+                                </div>
+                                <div style="color: #ccc; margin-left: 8px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+                html += `
+                    <style>@keyframes blink { 50% { opacity: 0.4; } }</style>
+                    <a href="/world-cup-2026/" style="display: block; text-align: center; padding: 12px; font-size: 14px; font-weight: 700; color: #fff; background: linear-gradient(135deg, #f70505, #c20404); border-radius: 8px; text-decoration: none; margin-top: 5px; box-shadow: 0 4px 10px rgba(247,5,5,0.2); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(247,5,5,0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(247,5,5,0.2)';">Predict Matches</a>
+                </div>`;
+                container.innerHTML = html;
+            })
+            .catch(err => {
+                container.innerHTML = '<div style="padding: 15px; border: 1px solid #eee; border-radius: 8px; text-align: center; font-size: 14px; color: #f70505;">Failed to load fixtures.</div>';
+            });
+    });
+    </script>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('wc_todays_fixtures', 'bd_todays_fixtures_shortcode');
+
+// World Cup 2026: Today's Fixtures Widget
+class WC_Todays_Fixtures_Widget extends WP_Widget {
+    public function __construct() {
+        parent::__construct(
+            'wc_todays_fixtures_widget',
+            'WC 2026: Today\'s Fixtures',
+            array('description' => 'Displays the World Cup matches happening today.')
+        );
+    }
+    public function widget($args, $instance) {
+        echo $args['before_widget'];
+        if (!empty($instance['title'])) {
+            echo $args['before_title'] . apply_filters('widget_title', $instance['title']) . $args['after_title'];
+        }
+        echo do_shortcode('[wc_todays_fixtures]');
+        echo $args['after_widget'];
+    }
+    public function form($instance) {
+        $title = !empty($instance['title']) ? $instance['title'] : 'Today\'s Fixtures';
+        ?>
+        <p>
+            <label for="<?php echo esc_attr($this->get_field_id('title')); ?>">Title:</label>
+            <input class="widefat" id="<?php echo esc_attr($this->get_field_id('title')); ?>" name="<?php echo esc_attr($this->get_field_name('title')); ?>" type="text" value="<?php echo esc_attr($title); ?>">
+        </p>
+        <?php
+    }
+    public function update($new_instance, $old_instance) {
+        $instance = array();
+        $instance['title'] = (!empty($new_instance['title'])) ? sanitize_text_field($new_instance['title']) : '';
+        return $instance;
+    }
+}
+
+// Register the widget
+add_action('widgets_init', function() {
+    register_widget('WC_Todays_Fixtures_Widget');
+});
