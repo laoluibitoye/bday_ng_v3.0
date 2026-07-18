@@ -128,7 +128,11 @@ function handle_mq_login() {
 
     check_ajax_referer('mq_auth_nonce', 'security');
 
-    $username = sanitize_email($_POST['username']);
+    // FIX (2026-07-18): field renamed from "username" to "login_username" in
+    // login.php — a sitewide "username already taken" script was still
+    // colliding with the login form even after the id-only fix, so the
+    // name attribute (what's actually submitted here) got renamed too.
+    $username = sanitize_email($_POST['login_username']);
     $password = $_POST['password'];
 
     if (empty($username) || empty($password)) {
