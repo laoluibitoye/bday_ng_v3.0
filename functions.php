@@ -1420,3 +1420,37 @@ add_filter( 'wp_mail', function ( $args ) {
 
 	return $args;
 }, 10 );
+
+// ADDED (2026-07-18): World Cup Prediction AJAX Handler — powers the
+// bracket-predictor submission form on templates/page-worldcup.php.
+add_action('wp_ajax_wc_submit_prediction', 'wc_submit_prediction_handler');
+add_action('wp_ajax_nopriv_wc_submit_prediction', 'wc_submit_prediction_handler');
+
+function wc_submit_prediction_handler() {
+    $name = isset($_POST['pred_name']) ? sanitize_text_field($_POST['pred_name']) : '';
+    $email = isset($_POST['pred_email']) ? sanitize_email($_POST['pred_email']) : '';
+    $phone = isset($_POST['pred_phone']) ? sanitize_text_field($_POST['pred_phone']) : '';
+    $sf1 = isset($_POST['sf1']) ? sanitize_text_field($_POST['sf1']) : '';
+    $sf2 = isset($_POST['sf2']) ? sanitize_text_field($_POST['sf2']) : '';
+    $sf3 = isset($_POST['sf3']) ? sanitize_text_field($_POST['sf3']) : '';
+    $sf4 = isset($_POST['sf4']) ? sanitize_text_field($_POST['sf4']) : '';
+
+    if (empty($name) || empty($email) || empty($phone)) {
+        wp_send_json_error('Missing required fields.');
+    }
+
+    $upload_dir = wp_upload_dir();
+    $csv_file = $upload_dir['basedir'] . '/worldcup_predictions.csv';
+
+    $is_new_file = !file_exists($csv_file);
+    $fp = fopen($csv_file, 'a');
+
+    if ($is_new_file) {
+        fputcsv($fp, array('Name', 'Email', 'Phone Number', 'Semi-Finalist 1', 'Semi-Finalist 2', 'Semi-Finalist 3', 'Semi-Finalist 4', 'Submission Date'));
+    }
+
+    fputcsv($fp, array($name, $email, $phone, $sf1, $sf2, $sf3, $sf4, current_time('mysql')));
+    fclose($fp);
+
+    wp_send_json_success('Prediction saved successfully!');
+}
