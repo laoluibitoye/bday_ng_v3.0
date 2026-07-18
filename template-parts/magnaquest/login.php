@@ -158,14 +158,15 @@
     <form id="mq-login-form">
         <div class="mq-form-group">
             <label class="mq-form-label" for="login_username">Email Address</label>
-            <!-- FIX (2026-07-17): id changed from "username" to "login_username" — some
-                 other script on the site does a real-time "is this username already
-                 taken" availability check against any #username field sitewide (meant
-                 for registration forms), and was mistakenly firing here too since this
-                 login field happened to share that id. The name="username" attribute
-                 is unchanged, so form submission (handle_mq_login() reads $_POST['username'])
-                 is unaffected. -->
-            <input type="email" id="login_username" name="username" class="mq-form-input" required placeholder="you@example.com">
+            <!-- FIX (2026-07-17): id changed from "username" to "login_username" to break
+                 a sitewide "username already taken" availability-check script's collision
+                 with this login field.
+                 FIX (2026-07-18): that alone wasn't enough — the offending script was
+                 still firing live, meaning it also (or instead) matches on the
+                 name="username" attribute, not just id. Renamed name to "login_username"
+                 too, and updated handle_mq_login() in functions/magnaquest-api.php to
+                 read $_POST['login_username'] accordingly. -->
+            <input type="email" id="login_username" name="login_username" class="mq-form-input" required placeholder="you@example.com">
         </div>
         <div class="mq-form-group">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
