@@ -1,8 +1,8 @@
 <?php
 
 // Configuration
-$loginUrl = 'https://businessday.ng/Login/';
-$homeUrl = 'https://businessday.ng/';
+$loginUrl = 'https://stg18326.businessday.ng/Login/';
+$homeUrl = 'https://stg18326.businessday.ng/';
 
 $selfcareOrigin = 'https://businessdaytest-selfcare.magnaquest.com';
 $checkoutOrigin = 'https://businessdaytest.magnaquest.com';
