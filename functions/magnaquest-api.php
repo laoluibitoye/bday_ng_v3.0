@@ -776,16 +776,24 @@ function mq_custom_authenticate($user, $username, $password) {
         return $user;
     }
 
-    // Identify if the local user is an admin or editor (we allow admins/editors to bypass Magnaquest)
+    // FIX (2026-07-18): re-applying a fix that was lost when this theme folder
+    // was rebuilt from a fresh staging pull earlier — the hardcoded allowlist
+    // here had regressed to only 'administrator'/'editor', which routes any
+    // other staff role (author, wpseo_manager, bddraft, bdeditor, wpseo_editor)
+    // through the Magnaquest customer-login API instead of local WP auth.
+    // Since those are internal-only accounts with no Magnaquest record, this
+    // broke login for them ("user not found" despite a correct password).
+    // Keep this list in sync with $staff_roles in bd_hide_admin_bar_for_non_staff()
+    // in functions.php.
     $local_user = get_user_by('login', $username);
     if (!$local_user) {
         $local_user = get_user_by('email', $username);
     }
 
     if ($local_user) {
-        $roles = (array) $local_user->roles;
-        if (in_array('administrator', $roles, true) || in_array('editor', $roles, true)) {
-            return $user; // Allow admins/editors to log in using WP local authentication
+        $staff_roles = ['administrator', 'editor', 'author', 'wpseo_manager', 'bddraft', 'bdeditor', 'wpseo_editor'];
+        if (array_intersect($staff_roles, (array) $local_user->roles)) {
+            return $user; // Allow staff accounts to log in using WP local authentication
         }
     }
 
