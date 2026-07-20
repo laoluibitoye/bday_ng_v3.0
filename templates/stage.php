@@ -362,7 +362,8 @@
                                     ?>
 
                                 <figure>
-                                    <a href="https://businessday.ng/todays-e-paper/">  <?= get_thumbnail(['post_id'=>$post->ID, 'size'=>'pdf_thumbnail']) ?> </a>
+                                    <!-- link updated from /todays-e-paper/ to /today-e-paper/ per new page slug -->
+                                    <a href="https://businessday.ng/today-e-paper/">  <?= get_thumbnail(['post_id'=>$post->ID, 'size'=>'pdf_thumbnail']) ?> </a>
                                 </figure>
                                 <?php 
                                 endforeach;
