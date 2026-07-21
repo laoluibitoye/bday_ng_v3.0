@@ -24,119 +24,6 @@
 
     <?php wp_head(); ?>
 
-    <?php
-    // FIX (2026-07-18): removed the $ad_config indirection through
-    // bd_get_ad_network_config() — that function was never actually defined
-    // by any plugin (confirmed: doesn't exist anywhere in this theme, the old
-    // theme, or the local dev plugins folder), so function_exists() always
-    // returned false and is_live silently defaulted to false, disabling every
-    // ad block on the live site. Confirmed by the user: ads work when the old
-    // (ungated) theme is active, and stop working the moment v3.0 activates.
-    // network_id was never actually read anywhere (every ad slot already has
-    // its GAM path hardcoded inline), so only is_live needs to exist now.
-    // Live by default; auto-disabled on staging hostnames below.
-    $ad_is_live = true;
-
-    // Automatically disable live ads on staging environments to prevent ad pollution and metrics issues
-    $current_host = $_SERVER['HTTP_HOST'] ?? '';
-    if (
-        strpos($current_host, 'stg') !== false ||
-        strpos($current_host, 'staging') !== false ||
-        (defined('WP_HOME') && (strpos(WP_HOME, 'stg') !== false || strpos(WP_HOME, 'staging') !== false)) ||
-        (defined('WP_SITEURL') && (strpos(WP_SITEURL, 'stg') !== false || strpos(WP_SITEURL, 'staging') !== false))
-    ) {
-        $ad_is_live = false;
-    }
-    ?>
-
-    <?php if ( !$ad_is_live ) : ?>
-    <script>
-        // 1. Safe DOM script creation interceptor to block Google Ads/Adsense dynamically on staging.
-        // This stops Google Auto Ads, anchor/sticky ads, and dynamic ad plugins from loading
-        // by intercepting script element creation, setters, and document.write calls in the browser.
-        (function() {
-            var originalCreateElement = document.createElement;
-            document.createElement = function(tagName) {
-                var element = originalCreateElement.apply(document, arguments);
-                if (tagName && tagName.toLowerCase() === 'script') {
-                    var originalSetAttribute = element.setAttribute;
-                    element.setAttribute = function(name, value) {
-                        if (name && name.toLowerCase() === 'src' && isGoogleAdScript(value)) {
-                            value = 'data:text/javascript,console.log("Ad Blocked");';
-                        }
-                        return originalSetAttribute.call(this, name, value);
-                    };
-                    
-                    Object.defineProperty(element, 'src', {
-                        get: function() {
-                            return this.getAttribute('src');
-                        },
-                        set: function(value) {
-                            if (isGoogleAdScript(value)) {
-                                value = 'data:text/javascript,console.log("Ad Blocked");';
-                            }
-                            this.setAttribute('src', value);
-                        },
-                        configurable: true,
-                        enumerable: true
-                    });
-                }
-                return element;
-            };
-            
-            var originalWrite = document.write;
-            document.write = function(html) {
-                if (isGoogleAdScript(html)) {
-                    return;
-                }
-                return originalWrite.apply(document, arguments);
-            };
-
-            var originalWriteln = document.writeln;
-            document.writeln = function(html) {
-                if (isGoogleAdScript(html)) {
-                    return;
-                }
-                return originalWriteln.apply(document, arguments);
-            };
-            
-            function isGoogleAdScript(url) {
-                if (!url || typeof url !== 'string') return false;
-                return (
-                    url.indexOf('securepubads.g.doubleclick.net') !== -1 ||
-                    url.indexOf('pagead2.googlesyndication.com') !== -1 ||
-                    url.indexOf('googleads.g.doubleclick.net') !== -1 ||
-                    url.indexOf('adsbygoogle') !== -1
-                );
-            }
-        })();
-
-        // 2. Stub the Google Publisher Tag (googletag) global object on staging
-        window.googletag = window.googletag || {};
-        window.googletag.cmd = window.googletag.cmd || [];
-        window.googletag.apiReady = true;
-        window.googletag.defineSlot = function() { return this; };
-        window.googletag.defineSizeMapping = function() { return this; };
-        window.googletag.defineOutOfPageSlot = function() { return this; };
-        window.googletag.addService = function() { return this; };
-        window.googletag.pubads = function() { return this; };
-        window.googletag.sizeMapping = function() { return this; };
-        window.googletag.addSize = function() { return this; };
-        window.googletag.build = function() { return this; };
-        window.googletag.enableServices = function() {};
-        window.googletag.enableSingleRequest = function() {};
-        window.googletag.enableLazyLoad = function() {};
-        window.googletag.collapseEmptyDivs = function() {};
-        window.googletag.setTargeting = function() { return this; };
-        window.googletag.display = function() {};
-		window.googletag.refresh = function() { return this; }; //MQ_BG
-
-        // 3. Stub the Adsense global pushing object
-        window.adsbygoogle = window.adsbygoogle || [];
-        window.adsbygoogle.push = function() {};
-    </script>
-    <?php endif; ?>
-
     <script>
         <?php include('assets/jquery.php'); ?>
         <?php include('assets/build/js/script.php'); ?>
@@ -481,19 +368,19 @@
 
     <?php // Already loaded and checked above ?>
 
-    <?php if ( $ad_is_live ) : ?>
     <!--dochase-->
     <!--
-      UPDATED (2026-07-18): replaced the old static businessday_top/body1/body2/
-      mid1/mid2/top2/body3 slot definitions with the "Dochase" viewability-based
-      ad-refresh engine and the new GAM network ID (21781351181, combined with
-      the existing 23043164651). Source delivery had 4 of 5 registerSlot() calls
-      missing their closing array bracket — a fatal JS syntax error that broke
-      this entire script block (verified with `node --check`). Fixed here by
-      closing each sizes array before the id/mapping arguments. The staging
-      is_live PHP gate wrapping this block is kept exactly as it was in this
-      theme — the delivered file had dropped it site-wide, which would have
-      made ads fire unconditionally on staging too.
+      REVERTED (2026-07-21): swapped back to the exact registerSlot() calls
+      from New File Updates/header.php at the user's request. Note this
+      reintroduces the missing-closing-bracket syntax error on 4 of the 5
+      calls below (top, top2, body1, body3 — body2 was already correct in
+      the source) that the 2026-07-18 fix had corrected; `node --check`
+      fails on this block again as a result, which will likely stop every
+      slot in this script (top/top2/body1/body2/body3/anchor/interstitial)
+      from rendering. The staging is_live PHP gate that used to wrap this
+      block has also been removed (not present in the original file) — ads
+      from this block now fire unconditionally on every environment,
+      staging included.
     -->
             <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js" crossorigin="anonymous"></script>
 <script>
@@ -563,19 +450,19 @@ googletag.cmd.push(function () {
   ========================== */
 
   registerSlot('/23043164651,21781351181/businessday_top',
-    [[728, 90], [300, 50], [320, 100], [300, 100], [468, 60], [970, 90], 'fluid', [320, 50], [300, 250]],
+    [[728, 90], [300, 50], [320, 100], [300, 100], [468, 60], [970, 90], 'fluid', [320, 50], [300, 250],
     'div-gpt-ad-1783084250687-0',
     mappingTop
   );
 
   registerSlot('/23043164651,21781351181/businessday_top2',
-    [[300, 50], [300, 280], [320, 50], [300, 250], [728, 90], [468, 60], [970, 90], [320, 100], 'fluid', [300, 100]],
+    [[300, 50], [300, 280], [320, 50], [300, 250], [728, 90], [468, 60], [970, 90], [320, 100], 'fluid', [300, 100],
     'div-gpt-ad-1783084673395-0',
     mappingTop
   );
 
 registerSlot('/23043164651,21781351181/businessday_body1',
-    [[300, 50], [300, 100], [200, 200], [250, 250], [336, 280], [300, 250], 'fluid', [320, 100], [320, 50]],
+    [[300, 50], [300, 100], [200, 200], [250, 250], [336, 280], [300, 250], 'fluid', [320, 100], [320, 50],
     'div-gpt-ad-1783096747143-0',
     mappingBody
   );
@@ -587,7 +474,7 @@ registerSlot('/23043164651,21781351181/businessday_body2',
   );
 
 registerSlot('/23043164651,21781351181/businessday_body3',
-    [[160, 600], [120, 600], [200, 200], [320, 480], [300, 600], 'fluid', [250, 250], [300, 250], [336, 280]],
+    [[160, 600], [120, 600], [200, 200], [320, 480], [300, 600], 'fluid', [250, 250], [300, 250], [336, 280],
     'div-gpt-ad-1783098103568-0',
     mappingBody
   );
@@ -707,7 +594,6 @@ if (interstitialSlot) interstitialSlot.addService(googletag.pubads());
 });
 </script>
     <!--dochase end-->
-            <?php endif; ?>
     <?php if (amp_is_request()): ?>
 
         <script async src="https://cdn.ampproject.org/v0.js"></script>
@@ -1092,7 +978,6 @@ if (interstitialSlot) interstitialSlot.addService(googletag.pubads());
         }
     </style>
 
-    <?php if ( $ad_is_live ) : ?>
     <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
 
     <div class="d-none d-md-block">
@@ -1156,7 +1041,6 @@ if (interstitialSlot) interstitialSlot.addService(googletag.pubads());
             });
         </script>
     </div>
-    <?php endif; ?>
 
     <script type="text/javascript">
         window._taboola = window._taboola || [];
@@ -1204,7 +1088,6 @@ if (interstitialSlot) interstitialSlot.addService(googletag.pubads());
   })();
 </script>
 </head>
-<?php if ( $ad_is_live ) : ?>
 <div class="d-none">
     <script>
         window.googletag = window.googletag || {
@@ -1275,7 +1158,6 @@ if (interstitialSlot) interstitialSlot.addService(googletag.pubads());
         });
     </script>
 </div>
-<?php endif; ?>
 
 <script defer src="https://terrific.live/terrific-sdk.js" storeId="hcIgBSw8yP8qpUmQrosv"></script>
 
@@ -1592,7 +1474,6 @@ if (interstitialSlot) interstitialSlot.addService(googletag.pubads());
 	    
         
     </div>
-    <?php if ( $ad_is_live ) : ?>
     <script>
         window.googletag = window.googletag || {
             cmd: []
@@ -1607,4 +1488,3 @@ if (interstitialSlot) interstitialSlot.addService(googletag.pubads());
         googletag.pubads().collapseEmptyDivs();
         googletag.enableServices();
     </script>
-    <?php endif; ?>
