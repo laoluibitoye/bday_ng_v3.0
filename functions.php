@@ -976,6 +976,16 @@ function bd_custom_login_form() {
 }
 add_shortcode('bd_login_form', 'bd_custom_login_form');
 
+// Logged-in users hitting /login/ (nav links, bookmarks, stray redirects) get
+// sent to their account page instead of seeing the login form again.
+function bd_redirect_logged_in_from_login() {
+    if ( is_user_logged_in() && is_page( 'login' ) ) {
+        wp_safe_redirect( home_url( '/my-account/' ) );
+        exit;
+    }
+}
+add_action( 'template_redirect', 'bd_redirect_logged_in_from_login' );
+
 function bd_signup_form_shortcode() {
     ob_start();
     include get_template_directory() . '/template-parts/magnaquest/sign-up.php';
