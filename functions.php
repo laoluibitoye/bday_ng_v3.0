@@ -230,6 +230,18 @@ function bday_get_cached_posts( string $cache_key, array $args, int $ttl = 1800 
 	return $posts;
 }
 
+/**
+ * FIX (2026-08-14): Routes through the same transient cache as the
+ * single-post "related articles" fix (2026-07-18) above.
+ *
+ * custom_get_posts() is the shared query helper behind every homepage
+ * widget shortcode (inc/widgets.php) AND every homepage template variant
+ * (templates/homepage.php, stage.php, slavepage.php, masterpage.php) plus
+ * the e-paper page — all high-hit-rate, all previously uncached. Wrapping
+ * it here fixes every call site at once instead of touching each one.
+ * Cache key is derived from the resolved args so different queries never
+ * collide; same 1800s TTL as the related-articles fix.
+ */
 function custom_get_posts( array $args = array() ): array {
 	// Set default filters for get_posts() to avoid issues.
 	$defaults = array(
@@ -248,7 +260,9 @@ function custom_get_posts( array $args = array() ): array {
 	// Adjust WP posts query.
 	$args = wp_parse_args( $args, $defaults );
 
-	$posts = get_posts( $args );
+	$cache_key = 'bday_custom_get_posts_' . md5( wp_json_encode( $args ) );
+	$posts     = bday_get_cached_posts( $cache_key, $args );
+
 	if ( ! empty( $posts ) ) {
 		return $posts;
 	}
