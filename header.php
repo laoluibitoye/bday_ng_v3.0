@@ -1331,12 +1331,29 @@ if (interstitialSlot) interstitialSlot.addService(googletag.pubads());
     <?php
 		$liveScoreActive = get_option( 'live_match' );
 		if($liveScoreActive == 'yes'){
-		
-		 $query = new WP_Query( [
-        'post_type'      => 'live_match',
-        'nopaging'       => true,
-        'posts_per_page' => '5',
-        ] ); 
+
+		 /**
+		  * RESOURCE_SAFETY_AUDIT.md 3.1: this used to be an uncached
+		  * `new WP_Query(['nopaging' => true, ...])` running on every single
+		  * page load site-wide (header.php loads on every template) — and
+		  * `nopaging` overrides `posts_per_page`, so it was unbounded too.
+		  * Dormant while the `live_match` option is off, but the highest
+		  * blast-radius query in either theme the moment it's switched on.
+		  * Now routed through the same transient cache the related-articles
+		  * fix (functions.php) uses, with a short 60s TTL rather than that
+		  * fix's 1800s default — long enough to turn "one query per
+		  * pageview" into "one query per minute," short enough that a score
+		  * update is still effectively live.
+		  */
+		 $live_matches = bday_get_cached_posts(
+			'bday_live_match_ticker',
+			array(
+				'post_type'        => 'live_match',
+				'numberposts'      => 5,
+				'suppress_filters' => true,
+			),
+			60
+		 );
     ?>
     <div class="container" style="padding: 10px 10px; background-color: #f3f3f3;">
         <div class="blinking"></div>
@@ -1346,28 +1363,23 @@ if (interstitialSlot) interstitialSlot.addService(googletag.pubads());
             </div>
             <div class="col-11 fw-bold">
                 <marquee behavior="scroll" direction="left" onmouseover="this.stop();" onmouseout="this.start();">
-                    <?php 
-                        if ( $query->have_posts() ) : while ( $query->have_posts() ) : $query->the_post(); 
-                        ?>
+                    <?php foreach ( $live_matches as $live_match ) : ?>
                         <?php
-                        echo get_post_meta($post->ID, 'home_team', true)  . '  '; 
-                        echo '<span class="text-danger">' . get_post_meta($post->ID, 'home_team_score', true) . '</span>';
-                        echo '<span class="text-secondary"> vs </span>'; 
-                        echo '<span class="text-danger">' . get_post_meta($post->ID, 'away_team_score', true)  . '</span>  '; 
-                        echo get_post_meta($post->ID, 'away_team', true);
+                        echo get_post_meta($live_match->ID, 'home_team', true)  . '  ';
+                        echo '<span class="text-danger">' . get_post_meta($live_match->ID, 'home_team_score', true) . '</span>';
+                        echo '<span class="text-secondary"> vs </span>';
+                        echo '<span class="text-danger">' . get_post_meta($live_match->ID, 'away_team_score', true)  . '</span>  ';
+                        echo get_post_meta($live_match->ID, 'away_team', true);
                         ?>
                         &nbsp <span style="color: #dcdcdc;">|</span>  &nbsp
-                        <?php
-                        endwhile;
-                        endif;
-                        wp_reset_postdata(); }
-                    ?>
+                    <?php endforeach; ?>
                 </marquee>
             </div>
         </div>
-	    
-        
+
+
     </div>
+    <?php } ?>
     <script>
         window.googletag = window.googletag || {
             cmd: []
